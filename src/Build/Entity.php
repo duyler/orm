@@ -26,6 +26,7 @@ final class Entity
         self::$collector->addSchema(self::$entityClass);
         return new self(
             self::$collector,
+            $entity,
         );
     }
 
