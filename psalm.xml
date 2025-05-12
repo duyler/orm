@@ -17,5 +17,6 @@
     <issueHandlers>
         <MixedAssignment errorLevel="suppress" />
         <ClassMustBeFinal errorLevel="suppress" />
+        <TooManyArguments errorLevel="suppress" />
     </issueHandlers>
 </psalm>
