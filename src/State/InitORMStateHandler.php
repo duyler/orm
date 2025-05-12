@@ -45,6 +45,15 @@ class InitORMStateHandler implements MainBeginStateHandlerInterface
 
             $this->em = new EntityManager($this->orm);
 
+            $this->container->set($this->orm);
+            $this->container->set($this->em);
+            $this->container->set($factory);
+            $this->container->bind([
+                FactoryInterface::class => Factory::class,
+                ORMInterface::class => ORM::class,
+                EntityManagerInterface::class => EntityManager::class,
+            ]);
+
             $stateService->addSharedService(
                 new SharedService(
                     class: ORM::class,
@@ -84,15 +93,6 @@ class InitORMStateHandler implements MainBeginStateHandlerInterface
                     ],
                 ),
             );
-
-            $this->container->set($this->orm);
-            $this->container->set($this->em);
-            $this->container->set($factory);
-            $this->container->bind([
-                FactoryInterface::class => Factory::class,
-                ORMInterface::class => ORM::class,
-                EntityManagerInterface::class => EntityManager::class,
-            ]);
         }
 
         $this->em?->clean(true);
