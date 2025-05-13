@@ -52,6 +52,11 @@ class SchemaCollector
         $this->schema[$entityClass][Schema::REPOSITORY] = $repositoryClass;
     }
 
+    public function addTypecastHandler(string $entityClass, array $typecastHandler): void
+    {
+        $this->schema[$entityClass][Schema::TYPECAST_HANDLER] = $typecastHandler;
+    }
+
     public function getSchema(): ORMSchema
     {
         return new ORMSchema($this->schema);

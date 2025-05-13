@@ -20,7 +20,9 @@
     "require": {
         "php": "^8.3",
         "duyler/builder": "dev-main",
-        "cycle/orm": "2.x-dev"
+        "cycle/orm": "^2.10",
+        "cycle/entity-behavior-uuid": "^1.2",
+        "ramsey/uuid": "^4.7"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0",
@@ -28,6 +30,7 @@
         "vimeo/psalm": "^7.0@dev"
     },
     "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Duyler\\ORM\\": "src/"
