@@ -60,6 +60,13 @@ class Loader implements PackageLoaderInterface
             ),
         );
 
+        $loaderService->addSharedService(
+            new SharedService(
+                class: SchemaCollector::class,
+                service: $this->schemaCollector,
+            ),
+        );
+
         /** @var StateHandlerInterface $initORMStateHandler */
         $initORMStateHandler = $this->container->get(InitORMStateHandler::class);
 
