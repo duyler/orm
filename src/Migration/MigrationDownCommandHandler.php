@@ -28,6 +28,10 @@ class MigrationDownCommandHandler
             $migrator->configure();
         }
 
-        $migrator->rollback();
+        $answer = readline('Are you sure you want to make changes to the database schema? (y/n): ');
+
+        if ('y' === strtolower((string) $answer)) {
+            $migrator->rollback();
+        }
     }
 }
