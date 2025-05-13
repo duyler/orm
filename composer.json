@@ -22,7 +22,9 @@
         "duyler/builder": "dev-main",
         "cycle/orm": "^2.10",
         "cycle/entity-behavior-uuid": "^1.2",
-        "ramsey/uuid": "^4.7"
+        "ramsey/uuid": "^4.7",
+        "cycle/migrations": "^4.2",
+        "cycle/schema-migrations-generator": "^2.3"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0",
