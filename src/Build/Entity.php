@@ -71,4 +71,10 @@ final class Entity
         self::$collector->addTypecast(self::$entityClass, $typecast);
         return $this;
     }
+
+    public function typecastHandler(array $typecastHandler): self
+    {
+        self::$collector->addTypecastHandler(self::$entityClass, $typecastHandler);
+        return $this;
+    }
 }

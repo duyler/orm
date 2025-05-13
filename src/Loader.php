@@ -60,10 +60,10 @@ class Loader implements PackageLoaderInterface
             ),
         );
 
-        /** @var StateHandlerInterface $buildORMStateHandler */
-        $buildORMStateHandler = $this->container->get(InitORMStateHandler::class);
+        /** @var StateHandlerInterface $initORMStateHandler */
+        $initORMStateHandler = $this->container->get(InitORMStateHandler::class);
 
-        $loaderService->addStateHandler($buildORMStateHandler);
+        $loaderService->addStateHandler($initORMStateHandler);
 
         new Entity($this->schemaCollector);
     }
