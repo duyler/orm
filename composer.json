@@ -20,6 +20,7 @@
     "require": {
         "php": "^8.3",
         "duyler/builder": "dev-main",
+        "duyler/console": "dev-main",
         "cycle/orm": "^2.10",
         "cycle/entity-behavior-uuid": "^1.2",
         "ramsey/uuid": "^4.7",
@@ -42,10 +43,5 @@
         "psr-4": {
             "Duyler\\ORM\\Test\\": ["tests/"]
         }
-    },
-    "bin": [
-        "bin/db-migrations",
-        "bin/db-fixtures",
-        "bin/db-orm"
-    ]
+    }
 }
