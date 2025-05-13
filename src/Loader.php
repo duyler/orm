@@ -12,10 +12,15 @@ use Duyler\Builder\Loader\LoaderServiceInterface;
 use Duyler\Builder\Loader\PackageLoaderInterface;
 use Cycle\Database;
 use Cycle\Database\Config;
+use Duyler\Console\CommandCollector;
 use Duyler\DI\ContainerInterface;
+use Duyler\EventBus\Build\Action;
 use Duyler\EventBus\Build\SharedService;
 use Duyler\EventBus\Contract\State\StateHandlerInterface;
 use Duyler\ORM\Build\Entity;
+use Duyler\ORM\Fixture\FixtureLoadCommandHandler;
+use Duyler\ORM\Migration\MigrationDownCommandHandler;
+use Duyler\ORM\Migration\MigrationUpCommandHandler;
 use Duyler\ORM\State\InitORMStateHandler;
 use Override;
 
@@ -25,6 +30,7 @@ class Loader implements PackageLoaderInterface
         private ContainerInterface $container,
         private DBALConfig $dbalConfig,
         private SchemaCollector $schemaCollector,
+        private CommandCollector $commandCollector,
     ) {}
 
     #[Override]
@@ -73,5 +79,30 @@ class Loader implements PackageLoaderInterface
         $loaderService->addStateHandler($initORMStateHandler);
 
         new Entity($this->schemaCollector);
+
+        $loaderService->addAction(
+            new Action(
+                id: 'ORM.MigrationsUp',
+                handler: MigrationUpCommandHandler::class,
+            ),
+        );
+
+        $loaderService->addAction(
+            new Action(
+                id: 'ORM.MigrationsDown',
+                handler: MigrationDownCommandHandler::class,
+            ),
+        );
+
+        $loaderService->addAction(
+            new Action(
+                id: 'ORM.FixturesLoad',
+                handler: FixtureLoadCommandHandler::class,
+            ),
+        );
+
+        $this->commandCollector->add('orm:migrations:up', 'ORM.MigrationsUp');
+        $this->commandCollector->add('orm:migrations:down', 'ORM.MigrationsDown');
+        $this->commandCollector->add('orm:fixtures:load', 'ORM.FixturesLoad');
     }
 }
