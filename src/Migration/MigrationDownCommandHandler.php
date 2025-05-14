@@ -6,6 +6,7 @@ namespace Duyler\ORM\Migration;
 
 use Cycle\Database\DatabaseManager;
 use Cycle\Migrations;
+use RuntimeException;
 
 class MigrationDownCommandHandler
 {
@@ -28,10 +29,12 @@ class MigrationDownCommandHandler
             $migrator->configure();
         }
 
-        $answer = readline('Are you sure you want to make changes to the database schema? (y/n): ');
+        $answer = readline('Are you sure you want to rollback last migration? (y/n): ');
 
-        if ('y' === strtolower((string) $answer)) {
-            $migrator->rollback();
+        if ('y' !== strtolower((string) $answer)) {
+            throw new RuntimeException('Aborted!');
         }
+
+        $migrator->rollback();
     }
 }
