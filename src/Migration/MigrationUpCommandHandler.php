@@ -6,6 +6,7 @@ namespace Duyler\ORM\Migration;
 
 use Cycle\Database\DatabaseManager;
 use Cycle\Migrations;
+use RuntimeException;
 
 final class MigrationUpCommandHandler
 {
@@ -30,7 +31,13 @@ final class MigrationUpCommandHandler
 
         $answer = readline('Are you sure you want to make changes to the database schema? (y/n): ');
 
-        if ('y' === strtolower((string) $answer)) {
+        if ('y' !== strtolower((string) $answer)) {
+            throw new RuntimeException('Aborted!');
+        }
+
+        $migrations = $migrator->getMigrations();
+
+        foreach ($migrations as $migration) {
             $migrator->run();
         }
     }
