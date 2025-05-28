@@ -4,64 +4,59 @@ declare(strict_types=1);
 
 namespace Duyler\ORM\Migration;
 
-use Cycle\Database\DatabaseManager;
-use Cycle\ORM\Schema;
-use Cycle\Schema\Generator\Migrations\NameBasedOnChangesGenerator;
-use Cycle\Schema\Generator\Migrations\Strategy\MultipleFilesStrategy;
-use Cycle\Schema\Registry;
-use Cycle\Schema\Definition\Entity;
-use Cycle\Schema\Generator\Migrations\GenerateMigrations;
-use Cycle\Migrations\Config;
-use Cycle\Migrations\Migrator;
-use Cycle\Migrations\FileRepository;
+use Cycle\Migrations\Migration;
+use DateTime;
+use Nette\PhpGenerator\PhpFile;
+use Nette\PhpGenerator\PsrPrinter;
+use Override;
+use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 
-/**
- * @psalm-suppress MixedArgument
- */
 class MigrationGenerateCommandHandler
 {
     public function __construct(
         private MigrationConfig $config,
-        private DatabaseManager $dbal,
-        private Schema $schema,
     ) {}
 
     public function __invoke()
     {
-        $config = new Config\MigrationConfig([
-            'directory' => $this->config->directory,
-            'table'     => $this->config->table,
-            'safe'      => $this->config->safe,
-        ]);
+        $date = new DateTime();
+        $dateFilePrefix = $date->format('Ymd.His');
 
-        $migrator = new Migrator($config, $this->dbal, new FileRepository($config));
+        $answer = (string) readline('Enter a migration name: ');
 
-        if (false === $migrator->isConfigured()) {
-            $migrator->configure();
-        }
+        $nameConverter = new CamelCaseToSnakeCaseNameConverter();
+        $postfixName = $answer === '' ? 'default' : $nameConverter->normalize($answer);
 
-        $registry = new Registry($this->dbal);
+        $file = new PhpFile();
+        $file->setStrictTypes();
 
-        /** @var array $entitySchema */
-        foreach ($this->schema->toArray() as $name => $entitySchema) {
-            $entity = new Entity();
-            $entity->setSchema($entitySchema);
-            $entity->setRepository($entitySchema[Schema::REPOSITORY] ?? null);
-            $entity->setClass($entitySchema[Schema::ENTITY]);
-            $entity->setDatabase($entitySchema[Schema::DATABASE] ?? null);
-            $entity->setTableName($entitySchema[Schema::TABLE]);
-            $entity->setTypecast($entitySchema[Schema::TYPECAST] ?? null);
-            $entity->setMapper($entitySchema[Schema::MAPPER] ?? null);
+        $namespace = $file->addNamespace('Migrations');
+        $namespace->addUse(Migration::class);
+        $namespace->addUse(Override::class);
 
-            $registry->register($entity);
-        }
+        $class = $namespace->addClass('Migration_' . $date->format('YmdHis') . '_' . $postfixName);
+        $class
+            ->setFinal()
+            ->setExtends(Migration::class)
+            ->addConstant('DATABASE', 'default')
+            ->setProtected()
+            ->setType('string');
 
-        $generator = new GenerateMigrations(
-            $migrator->getRepository(),
-            $migrator->getConfig(),
-            new MultipleFilesStrategy($migrator->getConfig(), new NameBasedOnChangesGenerator()),
+        $upMethod = $class->addMethod('up');
+        $upMethod
+            ->setReturnType('void')
+            ->addAttribute('Override');
+
+        $downMethod = $class->addMethod('down');
+        $downMethod
+            ->setReturnType('void')
+            ->addAttribute('Override');
+
+        $fileContent = (new PsrPrinter())->printFile($file);
+
+        file_put_contents(
+            $this->config->directory . '/' . $dateFilePrefix . '_' . $postfixName . '.php',
+            $fileContent,
         );
-
-        $generator->run($registry);
     }
 }

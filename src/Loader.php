@@ -20,6 +20,7 @@ use Duyler\EventBus\Contract\State\StateHandlerInterface;
 use Duyler\ORM\Build\Entity;
 use Duyler\ORM\Fixture\FixtureLoadCommandHandler;
 use Duyler\ORM\Migration\MigrationDownCommandHandler;
+use Duyler\ORM\Migration\MigrationGenerateCommandHandler;
 use Duyler\ORM\Migration\MigrationUpCommandHandler;
 use Duyler\ORM\State\InitORMStateHandler;
 use Override;
@@ -82,6 +83,13 @@ class Loader implements PackageLoaderInterface
 
         $loaderService->addAction(
             new Action(
+                id: 'ORM.MigrationsGenerate',
+                handler: MigrationGenerateCommandHandler::class,
+            ),
+        );
+
+        $loaderService->addAction(
+            new Action(
                 id: 'ORM.MigrationsUp',
                 handler: MigrationUpCommandHandler::class,
             ),
@@ -101,6 +109,7 @@ class Loader implements PackageLoaderInterface
             ),
         );
 
+        $this->commandCollector->add('orm:migrations:generate', 'ORM.MigrationsGenerate');
         $this->commandCollector->add('orm:migrations:up', 'ORM.MigrationsUp');
         $this->commandCollector->add('orm:migrations:down', 'ORM.MigrationsDown');
         $this->commandCollector->add('orm:fixtures:load', 'ORM.FixturesLoad');
