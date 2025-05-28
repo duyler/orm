@@ -19,6 +19,7 @@ use Duyler\EventBus\State\Service\StateMainBeginService;
 use Duyler\EventBus\State\StateContext;
 use Duyler\ORM\Provider\SchemaProvider;
 use Duyler\ORM\SchemaCollector;
+use Cycle\ORM\Collection\IlluminateCollectionFactory;
 use Override;
 
 class InitORMStateHandler implements MainBeginStateHandlerInterface
@@ -39,7 +40,10 @@ class InitORMStateHandler implements MainBeginStateHandlerInterface
 
         if (null === $this->orm) {
 
-            $factory = new Factory($this->databaseManager);
+            $factory = new Factory(
+                dbal: $this->databaseManager,
+                defaultCollectionFactory: new IlluminateCollectionFactory(),
+            );
 
             $this->orm = new ORM($factory, $schema);
 
