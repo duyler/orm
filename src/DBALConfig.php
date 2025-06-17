@@ -18,5 +18,6 @@ readonly class DBALConfig
         public array $databases = [],
         /** @var array<string, DriverConfig> $connections */
         public array $connections = [],
+        public bool $autocommit = true,
     ) {}
 }

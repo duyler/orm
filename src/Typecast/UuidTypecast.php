@@ -7,9 +7,9 @@ namespace Duyler\ORM\Typecast;
 use Cycle\Database\DatabaseInterface;
 use Cycle\ORM\Parser\CastableInterface;
 use Cycle\ORM\Parser\UncastableInterface;
+use Override;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use Override;
 
 final class UuidTypecast implements CastableInterface, UncastableInterface
 {

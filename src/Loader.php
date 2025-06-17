@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Duyler\ORM;
 
+use Cycle\Database;
+use Cycle\Database\Config;
 use Cycle\Database\Config\DriverConfig;
 use Cycle\Database\DatabaseManager;
 use Cycle\Database\DatabaseProviderInterface;
 use Cycle\Database\LoggerFactoryInterface;
 use Duyler\Builder\Loader\LoaderServiceInterface;
 use Duyler\Builder\Loader\PackageLoaderInterface;
-use Cycle\Database;
-use Cycle\Database\Config;
 use Duyler\Console\CommandCollector;
 use Duyler\DI\ContainerInterface;
 use Duyler\EventBus\Build\Action;
@@ -22,6 +22,7 @@ use Duyler\ORM\Fixture\FixtureLoadCommandHandler;
 use Duyler\ORM\Migration\MigrationDownCommandHandler;
 use Duyler\ORM\Migration\MigrationGenerateCommandHandler;
 use Duyler\ORM\Migration\MigrationUpCommandHandler;
+use Duyler\ORM\State\CommitUOWStateHandler;
 use Duyler\ORM\State\InitORMStateHandler;
 use Override;
 
@@ -77,7 +78,11 @@ class Loader implements PackageLoaderInterface
         /** @var StateHandlerInterface $initORMStateHandler */
         $initORMStateHandler = $this->container->get(InitORMStateHandler::class);
 
+        /** @var CommitUOWStateHandler $commitUOWStateHandler */
+        $commitUOWStateHandler = $this->container->get(CommitUOWStateHandler::class);
+
         $loaderService->addStateHandler($initORMStateHandler);
+        $loaderService->addStateHandler($commitUOWStateHandler);
 
         new Entity($this->schemaCollector);
 
