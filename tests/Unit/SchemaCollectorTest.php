@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Duyler\ORM\Test\Unit;
 
 use Duyler\ORM\SchemaCollector;
-use Duyler\ORM\ORMSchema;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -101,4 +100,4 @@ class SchemaCollectorTest extends TestCase
         $schema = $this->collector->getSchema()->toArray();
         $this->assertEquals($handler, $schema['TestEntity'][\Cycle\ORM\Schema::TYPECAST_HANDLER]);
     }
-} 
+}

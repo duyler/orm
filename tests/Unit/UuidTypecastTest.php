@@ -54,4 +54,4 @@ class UuidTypecastTest extends TestCase
         $this->assertIsString($result['id']);
         $this->assertEquals($uuid->toString(), $result['id']);
     }
-} 
+}
