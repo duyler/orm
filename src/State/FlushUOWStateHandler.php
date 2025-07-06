@@ -12,7 +12,7 @@ use Duyler\EventBus\State\StateContext;
 use Duyler\ORM\DBALConfig;
 use Override;
 
-class CommitUOWStateHandler implements MainEmptyStateHandlerInterface
+class FlushUOWStateHandler implements MainEmptyStateHandlerInterface
 {
     public function __construct(
         private ContainerInterface $container,
@@ -22,10 +22,13 @@ class CommitUOWStateHandler implements MainEmptyStateHandlerInterface
     #[Override]
     public function handle(StateMainEmptyService $stateService, StateContext $context): void
     {
+        /** @var EntityManagerInterface $em */
+        $em = $this->container->get(EntityManagerInterface::class);
+
         if ($this->dbalConfig->autocommit) {
-            /** @var EntityManagerInterface $em */
-            $em = $this->container->get(EntityManagerInterface::class);
             $em->run();
         }
+
+        $em->clean(true);
     }
 }

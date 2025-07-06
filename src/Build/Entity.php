@@ -20,7 +20,7 @@ final class Entity
         self::$entityClass = $entityClass;
     }
 
-    public static function create(string $entity): self
+    public static function declare(string $entity): self
     {
         self::$entityClass = $entity;
         self::$collector->addSchema(self::$entityClass);
