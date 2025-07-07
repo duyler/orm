@@ -18,7 +18,7 @@
         "docs": "https://duyler.org/en/docs/orm/"
     },
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "duyler/builder": "dev-main",
         "duyler/console": "dev-main",
         "cycle/orm": "^2.10",
