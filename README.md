@@ -1,4 +1,5 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=duyler_orm&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=duyler_orm)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=duyler_orm&metric=coverage)](https://sonarcloud.io/summary/new_code?id=duyler_orm)
 [![type-coverage](https://shepherd.dev/github/duyler/orm/coverage.svg)](https://shepherd.dev/github/duyler/event-bus)
 [![psalm-level](https://shepherd.dev/github/duyler/orm/level.svg)](https://shepherd.dev/github/duyler/event-bus)
 
@@ -531,7 +532,7 @@ Entity::declare(Product::class)
 #### Create Migration
 
 ```bash
-./bin/do orm:migrations:create AddProductsTable
+./bin/do orm:migrations:generate
 ```
 
 #### Apply Migrations
@@ -544,12 +545,6 @@ Entity::declare(Product::class)
 
 ```bash
 ./bin/do orm:migrations:down
-```
-
-#### Check Migration Status
-
-```bash
-./bin/do orm:migrations:status
 ```
 
 ### Fixtures
