@@ -6,6 +6,7 @@ namespace Duyler\ORM;
 
 use Cycle\ORM\Mapper\Mapper;
 use Cycle\ORM\Schema;
+use InvalidArgumentException;
 
 class SchemaCollector
 {
@@ -55,6 +56,34 @@ class SchemaCollector
     public function addTypecastHandler(string $entityClass, array $typecastHandler): void
     {
         $this->schema[$entityClass][Schema::TYPECAST_HANDLER] = $typecastHandler;
+    }
+
+    /**
+     * Add entity behaviors listeners
+     *
+     * @param non-empty-string $entityClass
+     * @param non-empty-array<int, class-string|array{class: class-string, args: array<string, mixed>}> $listeners
+     * @throws InvalidArgumentException
+     */
+    public function addListeners(string $entityClass, array $listeners): void
+    {
+        if (!isset($this->schema[$entityClass])) {
+            throw new InvalidArgumentException(
+                "Entity {$entityClass} must be declared before adding listeners. Call addSchema() first.",
+            );
+        }
+
+        if (!isset($this->schema[$entityClass][Schema::LISTENERS])) {
+            $this->schema[$entityClass][Schema::LISTENERS] = [];
+        }
+
+        /** @var array<int, class-string|array{class: class-string, args: array<string, mixed>}> $existingListeners */
+        $existingListeners = $this->schema[$entityClass][Schema::LISTENERS];
+
+        $this->schema[$entityClass][Schema::LISTENERS] = array_merge(
+            $existingListeners,
+            $listeners,
+        );
     }
 
     public function getSchema(): ORMSchema

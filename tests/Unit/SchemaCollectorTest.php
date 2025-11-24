@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Duyler\ORM\Test\Unit;
 
 use Duyler\ORM\SchemaCollector;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -99,5 +100,48 @@ class SchemaCollectorTest extends TestCase
         $this->collector->addTypecastHandler('TestEntity', $handler);
         $schema = $this->collector->getSchema()->toArray();
         $this->assertEquals($handler, $schema['TestEntity'][\Cycle\ORM\Schema::TYPECAST_HANDLER]);
+    }
+
+    #[Test]
+    public function add_listeners_should_set_listeners(): void
+    {
+        $this->collector->addSchema('TestEntity');
+
+        $listeners = [
+            'SimpleListener',
+            ['class' => 'ComplexListener', 'args' => ['field' => 'value']],
+        ];
+
+        $this->collector->addListeners('TestEntity', $listeners);
+
+        $schema = $this->collector->getSchema()->toArray();
+
+        $this->assertArrayHasKey(\Cycle\ORM\Schema::LISTENERS, $schema['TestEntity']);
+        $this->assertCount(2, $schema['TestEntity'][\Cycle\ORM\Schema::LISTENERS]);
+        $this->assertEquals('SimpleListener', $schema['TestEntity'][\Cycle\ORM\Schema::LISTENERS][0]);
+        $this->assertEquals('ComplexListener', $schema['TestEntity'][\Cycle\ORM\Schema::LISTENERS][1]['class']);
+    }
+
+    #[Test]
+    public function add_listeners_should_throw_if_entity_not_declared(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Entity TestEntity must be declared');
+
+        $this->collector->addListeners('TestEntity', ['Listener']);
+    }
+
+    #[Test]
+    public function add_listeners_should_merge_with_existing(): void
+    {
+        $this->collector->addSchema('TestEntity');
+        $this->collector->addListeners('TestEntity', ['Listener1']);
+        $this->collector->addListeners('TestEntity', ['Listener2']);
+
+        $schema = $this->collector->getSchema()->toArray();
+
+        $this->assertCount(2, $schema['TestEntity'][\Cycle\ORM\Schema::LISTENERS]);
+        $this->assertEquals('Listener1', $schema['TestEntity'][\Cycle\ORM\Schema::LISTENERS][0]);
+        $this->assertEquals('Listener2', $schema['TestEntity'][\Cycle\ORM\Schema::LISTENERS][1]);
     }
 }

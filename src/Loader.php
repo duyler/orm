@@ -10,6 +10,7 @@ use Cycle\Database\DatabaseManager;
 use Cycle\Database\DatabaseProviderInterface;
 use Cycle\Database\LoggerFactoryInterface;
 use Cycle\ORM\Collection\IlluminateCollectionFactory;
+use Cycle\ORM\Entity\Behavior\EventDrivenCommandGenerator;
 use Cycle\ORM\EntityManager;
 use Cycle\ORM\EntityManagerInterface;
 use Cycle\ORM\Factory;
@@ -131,7 +132,16 @@ class Loader implements PackageLoaderInterface
             defaultCollectionFactory: new IlluminateCollectionFactory(),
         );
 
-        $orm = new ORM($factory, $schema);
+        $commandGenerator = new EventDrivenCommandGenerator(
+            schema: $schema,
+            container: $this->container,
+        );
+
+        $orm = new ORM(
+            factory: $factory,
+            schema: $schema,
+            commandGenerator: $commandGenerator,
+        );
 
         $em = new EntityManager($orm);
 
