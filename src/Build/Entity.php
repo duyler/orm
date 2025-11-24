@@ -10,6 +10,7 @@ final class Entity
 {
     private static SchemaCollector $collector;
 
+    /** @var non-empty-string */
     private static string $entityClass;
 
     public function __construct(
@@ -17,11 +18,14 @@ final class Entity
         string $entityClass = '',
     ) {
         self::$collector = $collector;
-        self::$entityClass = $entityClass;
+        if ($entityClass !== '') {
+            self::$entityClass = $entityClass;
+        }
     }
 
     public static function declare(string $entity): self
     {
+        assert($entity !== '', 'Entity class name cannot be empty');
         self::$entityClass = $entity;
         self::$collector->addSchema(self::$entityClass);
         return new self(
@@ -75,6 +79,79 @@ final class Entity
     public function typecastHandler(array $typecastHandler): self
     {
         self::$collector->addTypecastHandler(self::$entityClass, $typecastHandler);
+        return $this;
+    }
+
+    /**
+     * Add custom listeners to entity
+     *
+     * @param non-empty-array<int, class-string|array{class: class-string, args: array<string, mixed>}> $listeners
+     * @return self
+     */
+    public function listeners(array $listeners): self
+    {
+        self::$collector->addListeners(self::$entityClass, $listeners);
+        return $this;
+    }
+
+    /**
+     * Automatically set creation timestamp
+     *
+     * @param non-empty-string $field Property name
+     * @param non-empty-string|null $column Column name (auto-detect if null)
+     * @return self
+     */
+    public function createdAt(string $field = 'createdAt', ?string $column = null): self
+    {
+        $listener = [
+            'class' => \Cycle\ORM\Entity\Behavior\Listener\CreatedAt::class,
+            'args' => ['field' => $field],
+        ];
+
+        self::$collector->addListeners(self::$entityClass, [$listener]);
+        return $this;
+    }
+
+    /**
+     * Automatically update timestamp on entity change
+     *
+     * @param non-empty-string $field Property name
+     * @param non-empty-string|null $column Column name (auto-detect if null)
+     * @param bool $nullable Whether field is nullable
+     * @return self
+     */
+    public function updatedAt(
+        string $field = 'updatedAt',
+        ?string $column = null,
+        bool $nullable = false,
+    ): self {
+        $listener = [
+            'class' => \Cycle\ORM\Entity\Behavior\Listener\UpdatedAt::class,
+            'args' => [
+                'field' => $field,
+                'nullable' => $nullable,
+            ],
+        ];
+
+        self::$collector->addListeners(self::$entityClass, [$listener]);
+        return $this;
+    }
+
+    /**
+     * Enable soft delete for entity
+     *
+     * @param non-empty-string $field Property name
+     * @param non-empty-string|null $column Column name (auto-detect if null)
+     * @return self
+     */
+    public function softDelete(string $field = 'deletedAt', ?string $column = null): self
+    {
+        $listener = [
+            'class' => \Cycle\ORM\Entity\Behavior\Listener\SoftDelete::class,
+            'args' => ['field' => $field],
+        ];
+
+        self::$collector->addListeners(self::$entityClass, [$listener]);
         return $this;
     }
 }
