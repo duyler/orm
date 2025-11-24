@@ -154,4 +154,164 @@ final class Entity
         self::$collector->addListeners(self::$entityClass, [$listener]);
         return $this;
     }
+
+    /**
+     * Enable optimistic locking
+     *
+     * Available rules:
+     * - 'increment': auto-incrementing integer (default for int fields)
+     * - 'microtime': microtime string (default for string fields)
+     * - 'random-string': random string
+     * - 'datetime': datetime version (default for datetime fields)
+     * - 'manual': manual version management
+     *
+     * @param non-empty-string $field Version property name
+     * @param non-empty-string|null $column Version column name (auto-detect if null)
+     * @param non-empty-string|null $rule Lock strategy
+     * @return self
+     */
+    public function optimisticLock(
+        string $field = 'version',
+        ?string $column = null,
+        ?string $rule = null,
+    ): self {
+        $listener = [
+            'class' => \Cycle\ORM\Entity\Behavior\Listener\OptimisticLock::class,
+            'args' => [
+                'field' => $field,
+                'rule' => $rule,
+            ],
+        ];
+
+        self::$collector->addListeners(self::$entityClass, [$listener]);
+        return $this;
+    }
+
+    /**
+     * Add custom hook for entity events
+     *
+     * Available events:
+     * - \Cycle\ORM\Entity\Behavior\Event\Mapper\Command\OnCreate::class
+     * - \Cycle\ORM\Entity\Behavior\Event\Mapper\Command\OnUpdate::class
+     * - \Cycle\ORM\Entity\Behavior\Event\Mapper\Command\OnDelete::class
+     *
+     * @param callable $callable Callback function
+     * @param class-string|non-empty-array<int, class-string> $events Event class name(s) to listen
+     * @return self
+     */
+    public function hook(callable $callable, string|array $events): self
+    {
+        $listener = [
+            'class' => \Cycle\ORM\Entity\Behavior\Listener\Hook::class,
+            'args' => [
+                'callable' => $callable,
+                'events' => is_string($events) ? [$events] : $events,
+            ],
+        ];
+
+        self::$collector->addListeners(self::$entityClass, [$listener]);
+        return $this;
+    }
+
+    /**
+     * Add custom event listener with DI support
+     *
+     * @param class-string $listenerClass Listener class name
+     * @param array<string, mixed> $args Additional constructor arguments
+     * @return self
+     */
+    public function eventListener(string $listenerClass, array $args = []): self
+    {
+        $listener = $args === []
+            ? $listenerClass
+            : ['class' => $listenerClass, 'args' => $args];
+
+        self::$collector->addListeners(self::$entityClass, [$listener]);
+        return $this;
+    }
+
+    /**
+     * Automatically generate UUID v1 (time-based)
+     *
+     * @param non-empty-string $field Property name
+     * @param non-empty-string|null $column Column name (auto-detect if null)
+     * @param bool $nullable Generate UUID or not
+     * @return self
+     */
+    public function uuid1(
+        string $field = 'uuid',
+        ?string $column = null,
+        bool $nullable = false,
+    ): self {
+        return $this->addUuidListener(
+            \Cycle\ORM\Entity\Behavior\Uuid\Listener\Uuid1::class,
+            $field,
+            $nullable,
+        );
+    }
+
+    /**
+     * Automatically generate UUID v4 (random)
+     *
+     * @param non-empty-string $field Property name
+     * @param non-empty-string|null $column Column name (auto-detect if null)
+     * @param bool $nullable Generate UUID or not
+     * @return self
+     */
+    public function uuid4(
+        string $field = 'uuid',
+        ?string $column = null,
+        bool $nullable = false,
+    ): self {
+        return $this->addUuidListener(
+            \Cycle\ORM\Entity\Behavior\Uuid\Listener\Uuid4::class,
+            $field,
+            $nullable,
+        );
+    }
+
+    /**
+     * Automatically generate UUID v7 (Unix Epoch Time) - RECOMMENDED
+     *
+     * @param non-empty-string $field Property name
+     * @param non-empty-string|null $column Column name (auto-detect if null)
+     * @param bool $nullable Generate UUID or not
+     * @return self
+     */
+    public function uuid7(
+        string $field = 'uuid',
+        ?string $column = null,
+        bool $nullable = false,
+    ): self {
+        return $this->addUuidListener(
+            \Cycle\ORM\Entity\Behavior\Uuid\Listener\Uuid7::class,
+            $field,
+            $nullable,
+        );
+    }
+
+    /**
+     * Helper method to add UUID listener
+     *
+     * @param class-string $listenerClass
+     * @param non-empty-string $field
+     * @param bool $nullable
+     * @return self
+     */
+    private function addUuidListener(
+        string $listenerClass,
+        string $field,
+        bool $nullable,
+    ): self {
+        $listener = [
+            'class' => $listenerClass,
+            'args' => [
+                'field' => $field,
+                'nullable' => $nullable,
+            ],
+        ];
+
+        self::$collector->addListeners(self::$entityClass, [$listener]);
+        return $this;
+    }
 }

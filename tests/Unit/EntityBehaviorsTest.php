@@ -156,4 +156,156 @@ final class EntityBehaviorsTest extends TestCase
         $this->assertEquals('id', $schema['TestEntity'][Schema::PRIMARY_KEY]);
         $this->assertCount(2, $schema['TestEntity'][Schema::LISTENERS]);
     }
+
+    #[Test]
+    public function optimistic_lock_behavior_should_add_listener(): void
+    {
+        Entity::declare('TestEntity')
+            ->optimisticLock(rule: 'increment');
+
+        $schema = $this->collector->getSchema()->toArray();
+        $listener = $schema['TestEntity'][Schema::LISTENERS][0];
+
+        $this->assertEquals(
+            \Cycle\ORM\Entity\Behavior\Listener\OptimisticLock::class,
+            $listener['class'],
+        );
+        $this->assertEquals('version', $listener['args']['field']);
+        $this->assertEquals('increment', $listener['args']['rule']);
+    }
+
+    #[Test]
+    public function optimistic_lock_with_custom_field_should_use_custom_field(): void
+    {
+        Entity::declare('TestEntity')
+            ->optimisticLock(field: 'lockVersion', rule: 'microtime');
+
+        $schema = $this->collector->getSchema()->toArray();
+        $listener = $schema['TestEntity'][Schema::LISTENERS][0];
+
+        $this->assertEquals('lockVersion', $listener['args']['field']);
+        $this->assertEquals('microtime', $listener['args']['rule']);
+    }
+
+    #[Test]
+    public function hook_behavior_should_add_listener(): void
+    {
+        $callable = fn() => null;
+
+        Entity::declare('TestEntity')
+            ->hook(
+                $callable,
+                \Cycle\ORM\Entity\Behavior\Event\Mapper\Command\OnCreate::class,
+            );
+
+        $schema = $this->collector->getSchema()->toArray();
+        $listener = $schema['TestEntity'][Schema::LISTENERS][0];
+
+        $this->assertEquals(
+            \Cycle\ORM\Entity\Behavior\Listener\Hook::class,
+            $listener['class'],
+        );
+        $this->assertSame($callable, $listener['args']['callable']);
+        $this->assertIsArray($listener['args']['events']);
+        $this->assertCount(1, $listener['args']['events']);
+    }
+
+    #[Test]
+    public function hook_with_multiple_events_should_add_all_events(): void
+    {
+        $callable = fn() => null;
+
+        Entity::declare('TestEntity')
+            ->hook($callable, [
+                \Cycle\ORM\Entity\Behavior\Event\Mapper\Command\OnCreate::class,
+                \Cycle\ORM\Entity\Behavior\Event\Mapper\Command\OnUpdate::class,
+            ]);
+
+        $schema = $this->collector->getSchema()->toArray();
+        $listener = $schema['TestEntity'][Schema::LISTENERS][0];
+
+        $this->assertCount(2, $listener['args']['events']);
+    }
+
+    #[Test]
+    public function event_listener_simple_should_add_class_name(): void
+    {
+        Entity::declare('TestEntity')
+            ->eventListener('CustomListener');
+
+        $schema = $this->collector->getSchema()->toArray();
+
+        $this->assertEquals('CustomListener', $schema['TestEntity'][Schema::LISTENERS][0]);
+    }
+
+    #[Test]
+    public function event_listener_with_args_should_add_with_args(): void
+    {
+        Entity::declare('TestEntity')
+            ->eventListener('CustomListener', ['param' => 'value']);
+
+        $schema = $this->collector->getSchema()->toArray();
+        $listener = $schema['TestEntity'][Schema::LISTENERS][0];
+
+        $this->assertEquals('CustomListener', $listener['class']);
+        $this->assertEquals(['param' => 'value'], $listener['args']);
+    }
+
+    #[Test]
+    public function uuid1_behavior_should_add_listener(): void
+    {
+        Entity::declare('TestEntity')
+            ->uuid1(field: 'id');
+
+        $schema = $this->collector->getSchema()->toArray();
+        $listener = $schema['TestEntity'][Schema::LISTENERS][0];
+
+        $this->assertStringContainsString('Uuid1', $listener['class']);
+        $this->assertEquals('id', $listener['args']['field']);
+        $this->assertFalse($listener['args']['nullable']);
+    }
+
+    #[Test]
+    public function uuid4_behavior_should_add_listener(): void
+    {
+        Entity::declare('TestEntity')
+            ->uuid4(field: 'uuid', nullable: true);
+
+        $schema = $this->collector->getSchema()->toArray();
+        $listener = $schema['TestEntity'][Schema::LISTENERS][0];
+
+        $this->assertStringContainsString('Uuid4', $listener['class']);
+        $this->assertEquals('uuid', $listener['args']['field']);
+        $this->assertTrue($listener['args']['nullable']);
+    }
+
+    #[Test]
+    public function uuid7_behavior_should_add_listener(): void
+    {
+        Entity::declare('TestEntity')
+            ->uuid7(field: 'id');
+
+        $schema = $this->collector->getSchema()->toArray();
+        $listener = $schema['TestEntity'][Schema::LISTENERS][0];
+
+        $this->assertStringContainsString('Uuid7', $listener['class']);
+        $this->assertEquals('id', $listener['args']['field']);
+        $this->assertFalse($listener['args']['nullable']);
+    }
+
+    #[Test]
+    public function all_behaviors_can_be_combined(): void
+    {
+        Entity::declare('TestEntity')
+            ->uuid7(field: 'id')
+            ->createdAt()
+            ->updatedAt()
+            ->softDelete()
+            ->optimisticLock(rule: 'increment')
+            ->eventListener('CustomListener');
+
+        $schema = $this->collector->getSchema()->toArray();
+
+        $this->assertCount(6, $schema['TestEntity'][Schema::LISTENERS]);
+    }
 }
